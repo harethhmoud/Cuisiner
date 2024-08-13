@@ -20,12 +20,13 @@ public class User {
     private String username;
     private String password;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER) // access "Role" entities as soon as "User" entity is loaded.
     @JoinTable(
-            name = "user_roles",
+            name = "user_roles", // joined table name
             joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
+            inverseJoinColumns = @JoinColumn(name = "role_id") // references role's primary key.
     )
-    private Set<Role> roles = new HashSet<>();
+    private Set<Role> roles = new HashSet<>(); // field that holds collection of Role entities linked to this user.
+    // Set ensures no duplicate roles.
 
 }
