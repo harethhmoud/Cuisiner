@@ -18,6 +18,7 @@ public class User {
     private Long id;
 
     private String username;
+    private String email;
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER) // access "Role" entities as soon as "User" entity is loaded.
