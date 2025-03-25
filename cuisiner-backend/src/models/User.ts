@@ -10,6 +10,9 @@ export interface IUser extends Document {
   bio?: string;
   following: mongoose.Types.ObjectId[];
   followers: mongoose.Types.ObjectId[];
+  authProvider: 'local' | 'google' | 'apple';  // Required for social login in MVP
+  socialId?: string;  // Required for social login in MVP
+  savedRecipes: mongoose.Types.ObjectId[];  // Basic recipe saving functionality
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -20,7 +23,7 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Username is required'],
     unique: true,
     trim: true,
-    minlength: [3, 'Username must be at least 3 characters long']
+    minlength: [4, 'Username must be at least 4 characters long']
   },
   email: {
     type: String,
@@ -33,10 +36,25 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'Password is required'],
-    minlength: [6, 'Password must be at least 6 characters long']
+    minlength: [8, 'Password must be at least 8 characters long'],
+    validate: {
+      validator: function(password: string) {
+        // At least one uppercase letter
+        const hasUpperCase = /[A-Z]/.test(password);
+        // At least one lowercase letter
+        const hasLowerCase = /[a-z]/.test(password);
+        // At least one number
+        const hasNumber = /\d/.test(password);
+        // At least one special character
+        const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+        
+        return hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar;
+      },
+      message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+    }
   },
   profilePicture: {
-    type: String,
+    type: String, // String because it's a URL to an image that is stored on a cloud service
     default: ''
   },
   bio: {
@@ -51,6 +69,19 @@ const userSchema = new mongoose.Schema({
   followers: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
+  }],
+  authProvider: {
+    type: String,
+    enum: ['local', 'google', 'apple'],
+    default: 'local'
+  },
+  socialId: {
+    type: String,
+    sparse: true
+  },
+  savedRecipes: [{
+    type: mongoose.Schema.Types.ObjectId, // ObjectId is a type that represents a unique identifier for a document in MongoDB
+    ref: 'Recipe'
   }]
 }, {
   timestamps: true
