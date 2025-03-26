@@ -56,6 +56,48 @@ enum Cuisine {
   MOROCCAN = 'moroccan'
 }
 
+enum Equipment {
+  // Basic Equipment
+  KNIFE = 'knife',
+  CUTTING_BOARD = 'cutting_board',
+  MIXING_BOWL = 'mixing_bowl',
+  MEASURING_CUPS = 'measuring_cups',
+  MEASURING_SPOONS = 'measuring_spoons',
+  WOODEN_SPOON = 'wooden_spoon',
+  SPATULA = 'spatula',
+  WHISK = 'whisk',
+  TONGS = 'tongs',
+  LADLE = 'ladle',
+  
+  // Cookware
+  SAUCEPAN = 'saucepan',
+  FRYING_PAN = 'frying_pan',
+  DUTCH_OVEN = 'dutch_oven',
+  BAKING_SHEET = 'baking_sheet',
+  CASSEROLE_DISH = 'casserole_dish',
+  POT = 'pot',
+  WOK = 'wok',
+  
+  // Appliances
+  OVEN = 'oven',
+  STOVETOP = 'stovetop',
+  MICROWAVE = 'microwave',
+  BLENDER = 'blender',
+  FOOD_PROCESSOR = 'food_processor',
+  HAND_MIXER = 'hand_mixer',
+  STAND_MIXER = 'stand_mixer',
+  
+  // Specialized Equipment
+  MORTAR_AND_PESTLE = 'mortar_and_pestle',
+  ROLLING_PIN = 'rolling_pin',
+  PASTRY_BRUSH = 'pastry_brush',
+  SIEVE = 'sieve',
+  STRAINER = 'strainer',
+  GRILL = 'grill',
+  SLOW_COOKER = 'slow_cooker',
+  PRESSURE_COOKER = 'pressure_cooker'
+}
+
 // Main Recipe interface
 export interface IRecipe extends Document {
   title: string;
@@ -72,6 +114,8 @@ export interface IRecipe extends Document {
   dietaryInfo?: string[]; // array of dietary information
   photos: string[];
   likes: mongoose.Types.ObjectId[];  // User IDs who liked this recipe
+  calories?: number;  // optional calories per serving
+  equipment: Equipment[];  // list of required kitchen equipment
 }
 
 // Recipe Schema
@@ -155,7 +199,7 @@ const recipeSchema = new mongoose.Schema({
   },
   cuisine: {
     type: String,
-    enum: Object.values(Cuisine),  // Use the enum values
+    enum: Object.values(Cuisine), 
     required: true,
     index: true  // for filtering
   },
@@ -171,12 +215,22 @@ const recipeSchema = new mongoose.Schema({
   likes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
+  }],
+  calories: {
+    type: Number,
+    required: false,
+    min: [0, 'Calories cannot be negative']
+  },
+  equipment: [{
+    type: String,
+    enum: Object.values(Equipment),
+    required: [true, 'At least one piece of equipment is required']
   }]
 }, {
   timestamps: true
 });
 
-// In the future this will allow us to search for recipes by title, description, and ingredients
+// In the future this will allow us to search for recipes by title, difficulty, time, or author
 recipeSchema.index({ title: 'text', description: 'text' });
 recipeSchema.index({ difficulty: 1 });
 recipeSchema.index({ totalTime: 1 });
@@ -190,8 +244,8 @@ recipeSchema.pre('save', function(next) {
   next();
 });
 
-// Export the enum for use in other files
-export { Cuisine };
+// Export the enums for use in other files
+export { Cuisine, Equipment };
 
 // Create and export the Recipe model
 export const Recipe = mongoose.model<IRecipe>('Recipe', recipeSchema); 
