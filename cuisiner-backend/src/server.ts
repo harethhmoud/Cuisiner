@@ -1,60 +1,42 @@
 import express from 'express';
-import cors from 'cors';
 import mongoose from 'mongoose';
+import cors from 'cors';
 import dotenv from 'dotenv';
-import { createServer } from 'http';
-import { Server } from 'socket.io';
+import authRoutes from './routes/auth.routes';
 
 // Load environment variables
 dotenv.config();
 
+// Create Express app
 const app = express();
-const httpServer = createServer(app);
-const io = new Server(httpServer, {
-  cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
-    methods: ['GET', 'POST']
-  }
-});
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Database connection
-const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/cuisiner');
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`Error: ${error.message}`);
-    process.exit(1);
-  }
-};
+// Routes
+app.use('/api/auth', authRoutes);
 
-// Socket.io connection
-io.on('connection', (socket) => {
-  console.log('A user connected');
-  
-  socket.on('disconnect', () => {
-    console.log('User disconnected');
-  });
-});
-
-// Routes (to be added)
+// Base route
 app.get('/', (req, res) => {
-  res.send('Cuisiner API is running...');
+  res.send('Cuisiner API is running');
 });
 
-// Start server
-const PORT = process.env.PORT || 5000;
+// Connect to MongoDB only if not in test mode
+if (process.env.NODE_ENV !== 'test') {
+  const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/cuisiner';
+  mongoose.connect(MONGO_URI)
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => {
+      console.error('MongoDB connection error:', err);
+      process.exit(1);
+    });
 
-const startServer = async () => {
-  await connectDB();
-  httpServer.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  // Start server only if this file is run directly
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
   });
-};
+}
 
-startServer(); 
+export default app; 
