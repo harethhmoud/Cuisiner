@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Default API configuration
@@ -16,7 +16,7 @@ const api: AxiosInstance = axios.create({
 
 // Request interceptor to attach auth token
 api.interceptors.request.use(
-  async (config: AxiosRequestConfig) => {
+  async (config: InternalAxiosRequestConfig) => {
     try {
       const token = await AsyncStorage.getItem('auth_token');
       if (token && config.headers) {
