@@ -11,7 +11,6 @@ describe('Auth Routes', () => {
     // Clear the database before each test
     await User.deleteMany({});
   });
-
   // Test data
   const testUser = {
     username: 'testuser',
@@ -29,6 +28,7 @@ describe('Auth Routes', () => {
       expect(res.body).toHaveProperty('token');
       expect(res.body.user).toHaveProperty('id');
       expect(res.body.user).toHaveProperty('username', testUser.username);
+
       expect(res.body.user).toHaveProperty('email', testUser.email);
       expect(res.body.user).not.toHaveProperty('password');
     });
