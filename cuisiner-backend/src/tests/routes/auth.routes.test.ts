@@ -196,4 +196,4 @@ describe('Auth Routes', () => {
       expect(res.body).toHaveProperty('message', 'Token is not valid');
     });
   });
-}); 
+});
